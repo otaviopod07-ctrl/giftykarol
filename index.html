@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K.O</title>
+
+<style>
+body{
+  margin:0;
+  font-family: 'Courier New', monospace;
+  background: radial-gradient(circle, #0a0010, #000);
+  color:#c084fc;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+  overflow:hidden;
+}
+
+#app{
+  width:90%;
+  max-width:420px;
+  text-align:center;
+  border:1px solid rgba(192,132,252,.2);
+  border-radius:16px;
+  padding:25px;
+  box-shadow:0 0 30px rgba(192,132,252,.2);
+  backdrop-filter: blur(10px);
+}
+
+p{ margin:12px 0; }
+
+button{
+  margin:8px;
+  padding:12px 18px;
+  border:none;
+  border-radius:10px;
+  background:rgba(192,132,252,.2);
+  color:#c084fc;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.2s;
+}
+
+button:hover{
+  background:#c084fc;
+  color:black;
+}
+
+.risk{
+  text-decoration:line-through;
+  opacity:.5;
+}
+
+#cinematic{
+  position:fixed;
+  inset:0;
+  background:black;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  opacity:0;
+  transition:1s;
+  z-index:10;
+}
+
+#cinematic.show{ opacity:1; }
+</style>
+</head>
+
+<body>
+
+<div id="cinematic"></div>
+<div id="app"></div>
+
+<script>
+const app = document.getElementById('app');
+const cine = document.getElementById('cinematic');
+
+const wait = ms => new Promise(r=>setTimeout(r,ms));
+
+function clear(){ app.innerHTML=''; }
+
+async function type(text){
+  const p = document.createElement('p');
+  app.appendChild(p);
+
+  for(let i=0;i<text.length;i++){
+    p.innerText += text[i];
+    await wait(20);
+  }
+}
+
+function button(label, fn){
+  const b = document.createElement('button');
+  b.innerText = label;
+
+  b.addEventListener('click', e=>{
+    fn(e, b);
+  });
+
+  return b;
+}
+
+function move(btn){
+  const x = Math.random()*120-60;
+  const y = Math.random()*60-30;
+  btn.style.transform = `translate(${x}px, ${y}px)`;
+}
+
+// ================= FLOW =================
+
+async function start(){
+
+  cine.classList.add("show");
+  cine.innerText = "OOÔ Karoliiiiiiineeeee...";
+  await wait(1800);
+
+  cine.innerText = "confia em mim...";
+  await wait(1500);
+
+  cine.innerText = "vai até o final...";
+  await wait(1500);
+
+  cine.classList.remove("show");
+  clear();
+
+  await type("de 0 a 10...");
+  await type("o quanto você acha que eu gosto de você?");
+
+  mainQuestion();
+}
+
+function mainQuestion(){
+
+  let moveCount = 0;
+  let insist = 0;
+
+  const b0 = button("0 😐", wrong);
+  const b5 = button("5 🤔", wrong);
+  const b10 = button("10 😌", right);
+
+  app.append(b0, b5, b10);
+
+  async function wrong(e, el){
+
+    if(moveCount < 2){
+      move(el);
+      moveCount++;
+      return;
+    }
+
+    el.classList.add("risk");
+    insist++;
+
+    if(insist === 1){
+      await type("0?? aí ce viajou");
+    }
+    else if(insist === 2){
+      await type("tá insistindo nisso mesmo?");
+    }
+    else{
+      await type("tomara q persista na gnt tanto quanto nessa resposta🤣");
+      await wait(1000);
+      await type("é mais 😌");
+    }
+  }
+
+  async function right(){
+    clear();
+
+    await type("quase acertou...");
+    await type("é mais 😌");
+
+    next();
+  }
+}
+
+async function next(){
+
+  clear();
+
+  await type("qual dessas mais parece você?");
+
+  const options = [
+    "não consigo acreditar em você 🤨",
+    "sou tranquila 😇",
+    "uma florzinha piquininha🌹🤣"
+  ];
+
+  options.forEach(opt=>{
+    app.append(button(opt, answer));
+  });
+
+  async function answer(e, el){
+    clear();
+
+    const map = {
+      "não consigo acreditar em você 🤨":"essa eu já esperava kkkk",
+      "sou tranquila 😇":"essa foi difícil de acreditar hein",
+      "uma florzinha piquininha🌹🤣":"vai ter q mandar áudio cantando kkkkkkk"
+    };
+
+    await type(map[el.innerText]);
+    await wait(1000);
+
+    ending();
+  }
+}
+
+async function ending(){
+
+  clear();
+
+  await type("você é impossível de ignorar");
+  await type("principalmente esse seu sorriso");
+
+  cine.classList.add("show");
+
+  await wait(2000);
+  cine.innerText = "tô morrendo de saudade";
+}
+
+start();
+</script>
+
+</body>
+</html>
