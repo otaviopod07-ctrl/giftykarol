@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K.O</title>
+
+<style>
+body{
+  margin:0;
+  font-family: system-ui, sans-serif;
+  background:#0a0010;
+  color:#f0ece8;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+  overflow:hidden;
+}
+
+#app{ max-width:420px; width:100%; text-align:center; padding:20px; }
+
+p{ margin:10px 0; }
+
+button{
+  margin:8px;
+  padding:12px 16px;
+  border:none;
+  border-radius:12px;
+  background:#c084fc;
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s;
+  position:relative;
+}
+
+button:active{ transform:scale(.95); }
+
+.risk{
+  text-decoration:line-through;
+  opacity:.5;
+}
+
+#cinematic{
+  position:fixed;
+  inset:0;
+  background:black;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  font-size:32px;
+  padding:20px;
+  opacity:0;
+  transition:1s;
+}
+
+#cinematic.show{ opacity:1; }
+
+canvas{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+}
+</style>
+</head>
+
+<body>
+
+<div id="app"></div>
+<div id="cinematic"></div>
+<canvas id="particles"></canvas>
+<canvas id="fw"></canvas>
+
+<script>
+// ================== UTILS ==================
+const app = document.getElementById('app');
+const cine = document.getElementById('cinematic');
+const wait = ms => new Promise(r=>setTimeout(r,ms));
+
+function vibrate(){ if(navigator.vibrate) navigator.vibrate(40); }
+function clear(){ app.innerHTML=''; }
+function text(t){ const p = document.createElement('p'); p.innerText=t; app.appendChild(p); }
+function btn(label, fn){ const b = document.createElement('button'); b.innerText=label; b.onclick=e=>{ vibrate(); fn(e,b); }; return b; }
+function move(btn){ const x=Math.random()*100-50; const y=Math.random()*50-25; btn.style.transform=`translate(${x}px,${y}px)`; }
+
+// ================== PARTICLES ==================
+const pc = document.getElementById("particles");
+const pctx = pc.getContext("2d");
+function resizeP(){ pc.width = innerWidth; pc.height = innerHeight; }
+resizeP(); window.addEventListener("resize", resizeP);
+
+let particles = [];
+for(let i=0;i<60;i++){
+  particles.push({x:Math.random()*pc.width, y:Math.random()*pc.height, vx:(Math.random()-.5)*0.5, vy:(Math.random()-.5)*0.5, size:Math.random()*2+1});
+}
+
+function drawParticles(){
+  pctx.clearRect(0,0,pc.width,pc.height);
+  particles.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0||p.x>pc.width) p.vx*=-1;
+    if(p.y<0||p.y>pc.height) p.vy*=-1;
+    pctx.fillStyle="rgba(192,132,252,0.5)";
+    pctx.beginPath(); pctx.arc(p.x,p.y,p.size,0,Math.PI*2); pctx.fill();
+  });
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+// ================== FIREWORKS ==================
+const c = document.getElementById("fw");
+const ctx = c.getContext("2d");
+function resize(){ c.width=innerWidth; c.height=innerHeight; }
+resize(); window.onresize=resize;
+
+let parts=[];
+function boom(){
+  const x=Math.random()*c.width;
+  const y=Math.random()*c.height/2;
+  for(let i=0;i<90;i++){
+    parts.push({x,y,vx:(Math.random()-.5)*7,vy:(Math.random()-.5)*7,life:1});
+  }
+}
+function drawFW(){
+  ctx.fillStyle="rgba(0,0,0,.2)";
+  ctx.fillRect(0,0,c.width,c.height);
+  parts.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.life-=.02;
+    ctx.fillStyle=`rgba(200,100,255,${p.life})`;
+    ctx.fillRect(p.x,p.y,2,2);
+  });
+  parts = parts.filter(p=>p.life>0);
+  requestAnimationFrame(drawFW);
+}
+drawFW();
+function fireworks(){
+  let i=0; const int=setInterval(()=>{ boom(); i++; if(i>25) clearInterval(int); },250);
+}
+
+// ================== MAIN ==================
+async function start(){
+
+  text("OOÔ Karoliiiiiiineeeee...");
+  await wait(1200);
+  text("confia em mim e vai até o final...");
+  await wait(1000);
+  clear();
+
+  // PERGUNTA PRINCIPAL
+  text("de 0 a 10... o quanto você acha que eu gosto de você?");
+  await wait(500);
+
+  let moveCount=0, insist=0;
+  const b0 = btn("0 😐", wrong);
+  const b5 = btn("5 🤔", wrong);
+  const b10 = btn("10 😌", right);
+  app.append(b0,b5,b10);
+
+  async function wrong(e,el){
+    if(moveCount<2){ move(el); moveCount++; return; }
+    el.classList.add('risk'); insist++;
+    if(insist===1) text("0?? aí ce viajou ");
+    else if(insist===2) text("tá insistindo nisso mesmo? 🤨");
+    else text("tomara q persista na gnt tanto quanto nessa resposta🤣");
+    await wait(1000);
+    text("é mais 😌");
+  }
+
+  async function right(){
+    clear();
+    text("quase acertou...");
+    await wait(1000);
+    text("é mais 😌");
+    await wait(1200);
+    clear();
+
+    // SEGUNDA PERGUNTA
+    text("qual dessas mais parece você?");
+    await wait(500);
+
+    app.append(
+      btn("não consigo acreditar em você 🤨", q2),
+      btn("sou tranquila 😇", q2),
+      btn("uma florzinha piquininha🌹🤣", q2)
+    );
+  }
+
+  async function q2(e,el){
+    clear();
+    const map={
+      "não consigo acreditar em você 🤨":"essa eu já esperava kkkk",
+      "sou tranquila 😇":"essa foi difícil de acreditar hein",
+      "uma florzinha piquininha🌹🤣":"vai ter q mandar áudio cantando kkkkkkk"
+    };
+    text(map[el.innerText]);
+    await wait(1200);
+    next();
+  }
+
+  async function next(){
+    clear();
+    text("mas tem umas coisas que não tem discussão"); await wait(1000);
+    text("você é impossível de ignorar"); await wait(1000);
+    text("principalmente por causa do seu sorrisão aí, lindona"); await wait(1200);
+    clear();
+    text("desde aquele réveillon de 2019..."); await wait(1200);
+    text("já dava pra perceber"); await wait(1000);
+    text("que seria pro resto da vida"); await wait(1200);
+    clear();
+    text("e mesmo com essa sua mania de não acreditar em mim..."); await wait(1200);
+    text("eu continuo aqui tentando"); await wait(1000);
+    text("e até que eu não tô indo tão mal assim 😌"); await wait(1200);
+    final();
+  }
+
+  async function final(){
+    await wait(800);
+    cine.classList.add("show");
+    cine.innerText="eu tentei falar isso de várias formas...";
+    await wait(2200);
+    cine.innerText="mas nenhuma parecia suficiente";
+    await wait(2200);
+    cine.innerText="tô morrendo de saudade";
+    fireworks();
+  }
+}
+
+start();
+</script>
+
+</body>
+</html>
